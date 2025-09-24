@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacotim - Teste Interativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1A233A;
+            color: #E2E8F0;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.4), 0 0 20px rgba(0, 255, 0, 0.2);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 15px rgba(0, 255, 0, 0.6), 0 0 30px rgba(0, 255, 0, 0.4);
+            }
+        }
+        .compressing {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        .range-slider::-webkit-slider-runnable-track {
+            background: #4B5563;
+            border-radius: 9999px;
+            height: 8px;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #2ECC71;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-top: -6px; /* Ajuste para centralizar o thumb na trilha */
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <!-- Container principal -->
+    <div class="max-w-md w-full">
+        <div class="flex items-center space-x-4 mb-8 justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 text-[#2ECC71]">
+                <path d="M4.5 3.75a3 3 0 0 0-3 3v.75h21v-.75a3 3 0 0 0-3-3h-15Z" />
+                <path fill-rule="evenodd" d="M22.5 9.75h-21v7.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3v-7.5ZM12.75 12a.75.75 0 0 0-1.5 0v2.25H8.25a.75.75 0 0 0 0 1.5h3v2.25a.75.75 0 0 0 1.5 0V15h3a.75.75 0 0 0 0-1.5h-3V12Z" clip-rule="evenodd" />
+            </svg>
+            <h1 class="text-4xl font-bold">Pacotim</h1>
+        </div>
+    
+        <div class="w-full bg-[#111827] rounded-3xl p-6 shadow-2xl mb-6">
+            <div class="flex flex-col items-center">
+                <p class="text-sm text-gray-400 mb-2">Internet guardada</p>
+                <p class="text-5xl font-extrabold text-[#2ECC71] mb-2" id="data-saved">1.20 GB</p>
+                <div class="w-full bg-gray-700 rounded-full h-2.5">
+                    <div class="bg-[#2ECC71] h-2.5 rounded-full" id="progress-saved"></div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="w-full bg-[#111827] rounded-3xl p-6 shadow-2xl mb-6">
+            <div class="flex flex-col items-center">
+                <p class="text-sm text-gray-400 mb-2">Uso do mês</p>
+                <p class="text-5xl font-extrabold text-[#90D0FF] mb-2" id="data-used">0.50 GB</p>
+                <div class="w-full bg-gray-700 rounded-full h-2.5">
+                    <div class="bg-[#90D0FF] h-2.5 rounded-full" id="progress-used"></div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="w-full bg-[#111827] rounded-3xl p-6 shadow-2xl mb-6 flex flex-col items-center">
+            <p class="text-lg font-semibold mb-4">Economia de dados</p>
+            <button id="compress-btn" class="w-full py-3 px-6 rounded-full font-bold transition-all duration-300 bg-gray-700 text-gray-300 hover:bg-gray-600 active:bg-gray-700">
+                Ativar Turbo compressão
+            </button>
+        </div>
+    
+        <div class="flex justify-center w-full space-x-4">
+            <button id="save-btn" class="w-1/2 bg-[#2ECC71] text-white rounded-full py-4 text-lg font-bold shadow-lg hover:bg-[#25a05b] transition-colors">
+                Guardar Internet
+            </button>
+            <button id="release-btn" class="w-1/2 bg-[#90D0FF] text-white rounded-full py-4 text-lg font-bold shadow-lg hover:bg-[#6CA8FF] transition-colors">
+                Liberar Dados
+            </button>
+        </div>
+    </div>
+    
+    <!-- Modal de Guardar Dados -->
+    <div id="save-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-[#111827] p-8 rounded-3xl shadow-2xl max-w-sm w-full relative">
+            <button id="close-save-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-2xl font-bold mb-4 text-center">Guardar Dados</h2>
+            <p class="text-sm text-gray-400 mb-2 text-center">Selecione o quanto de internet você quer guardar:</p>
+            <div class="relative mb-6">
+                <input type="range" min="0" max="5000" step="100" value="500" class="w-full range-slider appearance-none h-2 bg-gray-700 rounded-lg" id="save-range">
+                <div class="text-center mt-2 text-lg font-semibold" id="save-value">500 MB</div>
+            </div>
+            <button id="confirm-save-btn" class="w-full bg-[#2ECC71] text-white rounded-full py-3 text-lg font-bold shadow-lg hover:bg-[#25a05b] transition-colors">
+                Guardar
+            </button>
+        </div>
+    </div>
+    
+    <!-- Modal de Liberar Dados -->
+    <div id="release-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-[#111827] p-8 rounded-3xl shadow-2xl max-w-sm w-full relative">
+            <button id="close-release-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-2xl font-bold mb-4 text-center">Liberar Dados</h2>
+            <p class="text-sm text-gray-400 mb-2 text-center">Quanto de internet você quer liberar?</p>
+            <div class="relative mb-6">
+                <input type="range" min="0" max="1200" step="10" value="50" class="w-full range-slider appearance-none h-2 bg-gray-700 rounded-lg" id="release-range">
+                <div class="text-center mt-2 text-lg font-semibold" id="release-value">50 MB</div>
+            </div>
+            <button id="confirm-release-btn" class="w-full bg-[#90D0FF] text-white rounded-full py-3 text-lg font-bold shadow-lg hover:bg-[#6CA8FF] transition-colors">
+                Liberar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const dataSavedEl = document.getElementById('data-saved');
+        const dataUsedEl = document.getElementById('data-used');
+        const progressSavedEl = document.getElementById('progress-saved');
+        const progressUsedEl = document.getElementById('progress-used');
+        const compressBtn = document.getElementById('compress-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const releaseBtn = document.getElementById('release-btn');
+        const saveModal = document.getElementById('save-modal');
+        const releaseModal = document.getElementById('release-modal');
+        const closeSaveModalBtn = document.getElementById('close-save-modal');
+        const closeReleaseModalBtn = document.getElementById('close-release-modal');
+        const saveRange = document.getElementById('save-range');
+        const saveValueEl = document.getElementById('save-value');
+        const releaseRange = document.getElementById('release-range');
+        const releaseValueEl = document.getElementById('release-value');
+        const confirmSaveBtn = document.getElementById('confirm-save-btn');
+        const confirmReleaseBtn = document.getElementById('confirm-release-btn');
+
+        let dataSaved = 1200; // em MB
+        let dataUsed = 500; // em MB
+        const maxStorage = 5000; // em MB
+        let isCompressing = false;
+
+        function updateUI() {
+            dataSavedEl.innerText = `${(dataSaved / 1000).toFixed(2)} GB`;
+            dataUsedEl.innerText = `${(dataUsed / 1000).toFixed(2)} GB`;
+            progressSavedEl.style.width = `${(dataSaved / maxStorage) * 100}%`;
+            progressUsedEl.style.width = `${(dataUsed / maxStorage) * 100}%`;
+        }
+
+        saveBtn.addEventListener('click', () => {
+            saveModal.classList.remove('hidden');
+            saveRange.max = maxStorage - dataSaved;
+            saveRange.value = 500;
+            saveValueEl.innerText = `${saveRange.value} MB`;
+        });
+
+        closeSaveModalBtn.addEventListener('click', () => {
+            saveModal.classList.add('hidden');
+        });
+
+        releaseBtn.addEventListener('click', () => {
+            releaseModal.classList.remove('hidden');
+            releaseRange.max = dataSaved;
+            releaseRange.value = Math.min(50, dataSaved);
+            releaseValueEl.innerText = `${releaseRange.value} MB`;
+        });
+
+        closeReleaseModalBtn.addEventListener('click', () => {
+            releaseModal.classList.add('hidden');
+        });
+
+        saveRange.addEventListener('input', (e) => {
+            saveValueEl.innerText = `${e.target.value} MB`;
+        });
+
+        releaseRange.addEventListener('input', (e) => {
+            releaseValueEl.innerText = `${e.target.value} MB`;
+        });
+
+        confirmSaveBtn.addEventListener('click', () => {
+            const amount = parseInt(saveRange.value);
+            if (amount > 0) {
+                dataSaved += amount;
+                updateUI();
+            }
+            saveModal.classList.add('hidden');
+        });
+
+        confirmReleaseBtn.addEventListener('click', () => {
+            const amount = parseInt(releaseRange.value);
+            if (amount > 0 && amount <= dataSaved) {
+                dataSaved -= amount;
+                dataUsed += amount;
+                updateUI();
+            }
+            releaseModal.classList.add('hidden');
+        });
+
+        compressBtn.addEventListener('click', () => {
+            isCompressing = !isCompressing;
+            if (isCompressing) {
+                compressBtn.innerText = 'Turbo compressão ativada';
+                compressBtn.classList.remove('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600', 'active:bg-gray-700');
+                compressBtn.classList.add('bg-[#2ECC71]', 'text-white', 'active:bg-[#25a05b]', 'compressing');
+            } else {
+                compressBtn.innerText = 'Ativar Turbo compressão';
+                compressBtn.classList.remove('bg-[#2ECC71]', 'text-white', 'active:bg-[#25a05b]', 'compressing');
+                compressBtn.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600', 'active:bg-gray-700');
+            }
+        });
+
+        window.onload = updateUI;
+
+    </script>
+</body>
+</html>
